@@ -14,3 +14,6 @@ More complex ones might include
 2.  Range length
 3.  Matches Pattern (takes regex)
 4.  Use matches pattern to do URL, and other pattern like examples
+
+Ideas inspired from the jQuery plugin rules:
+http://jqueryvalidation.org/documentation/
