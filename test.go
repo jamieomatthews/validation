@@ -36,6 +36,7 @@ func (contactRequest ContactRequest) Validate(errors *binding.Errors, req *http.
 	//run some validators
 	v.MaxLength(len(contactRequest.Comments), 20, "comments")
 	v.MinLength(len(contactRequest.FullName), 4, "full_name")
+
 }
 
 type ContactRequest struct {

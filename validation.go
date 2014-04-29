@@ -6,7 +6,6 @@ type Validation struct {
 	Errors binding.Errors
 }
 
-//func NewValidation(errors
 // returns true if the validator has 1 or more errors
 func (v *Validation) HasErrors() bool {
 	return len(v.Errors.Fields) > 0
