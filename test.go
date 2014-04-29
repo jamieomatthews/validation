@@ -44,3 +44,7 @@ type ContactRequest struct {
 	Subject  string `form:"subject"`
 	Comments string `form:"comments"`
 }
+
+// func (v *Validation) MinLength(n int, minLength int, fieldName string) bool {
+// 	return v.validate(MinLength{MinLength: minLength}, n, fieldName)
+// }
