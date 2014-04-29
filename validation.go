@@ -1,4 +1,4 @@
-package main
+package validation
 
 import "github.com/martini-contrib/binding"
 
