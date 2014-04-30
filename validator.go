@@ -1,6 +1,9 @@
 package validation
 
-import "fmt"
+import (
+	"fmt"
+	"regexp"
+)
 
 //each validator will just implement this interface,
 //which will be enough for the validation object to validate and create errors
@@ -41,4 +44,28 @@ func (min MinLength) IsValid(obj interface{}) bool {
 		return num >= min.MinLength
 	}
 	return false
+}
+
+//matches pattern validator
+//primarily meant for internal use for other validators, like email or credit card
+type Matches struct {
+	Regex *regexp.Regexp
+}
+
+func (m Matches) IsValid(obj interface{}) bool {
+	str := obj.(string)
+	return m.Regex.MatchString(str)
+}
+
+func (m Matches) DefaultMessage() string {
+	return fmt.Sprintf("Must match %s", m.Regex)
+}
+
+//matches email (by regex)
+type Email struct {
+	Matches
+}
+
+func (email Email) DefaultMessage() string {
+	return fmt.Sprintf("Must be a valid email address")
 }
