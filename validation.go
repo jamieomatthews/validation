@@ -1,13 +1,29 @@
 package validation
 
 import (
+	"net/http"
 	"regexp"
 
 	"github.com/martini-contrib/binding"
 )
 
 type Validation struct {
-	Errors binding.Errors
+	Errors  *binding.Errors
+	Request *http.Request
+	Field   interface{} //a pointer to the passed in feild
+	Key     string      //string key pulled from the field
+	IsValid bool
+}
+
+func New(errors *binding.Errors, request *http.Request) *Validation {
+	return &Validation{Errors: errors, Request: request}
+}
+
+func (v *Validation) Validate(field interface{}, key string) *Validation {
+	v.Field = field
+	v.Key = key
+	v.IsValid = true //valid until proven otherwise
+	return v
 }
 
 // returns true if the validator has 1 or more errors
