@@ -25,6 +25,31 @@ type ContactRequest struct {
 }
 ```
 
+This will generate something like:
+```json
+[
+    {
+        "fieldNames": [
+            "full_name"
+        ],
+        "message": "Maximum Length is 20"
+    },
+    {
+        "fieldNames": [
+            "email"
+        ],
+        "classification": "email-class",
+        "message": "Custom Email Validation Message"
+    },
+    {
+        "fieldNames": [
+            "comments"
+        ],
+        "message": "Minimum Length is 10"
+    }
+]
+```
+
 My goal is to make this actually work with any web framework, as it doesnt only apply to Martini.  *For now* I have hard coded in the binding.Errors as the internal error structure, but I will swap this out ASAP for an interface structure that would let anyone utilize it.
 
 Here are some validations I have created so far:
