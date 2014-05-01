@@ -4,19 +4,24 @@ The idea behind this repo is to give some nice default validation handlers to co
 
 Heres an example of the syntax we are going for: (thanks [Matt](https://github.com/mholt) for suggesting)
 ```go
-func (bp *BlogPost) Validate(errors binding.Errors, req *http.Request) Errors {
-    v := validator.New(errors, req)
 
-    v.Validate(&bp.Title).TrimSpace().Length(10, 100).MustNotContain("foo")
-    v.Validate(&bp.Subtitle).TrimSpace().MaxLength(50)
-    v.Validate(&bp.Content).TrimSpace().MustContain("Go", "Classification", "Custom message")
-    v.Validate(&bp.Author.Email).EmailAddress()
-    v.Validate(req).HasHeader("X-Foo-Bar") // maybe not useful; but the idea is you can do validation on the request itself
+func (contactRequest ContactRequest) Validate(errors binding.Errors, req *http.Request) binding.Errors {
 
-    // then any other custom validation steps you want to perform yourself,
-    // more specific to your application or handler usually
+	v := validation.New(errors, req)
 
-    return v.Errors()
+	// //run some validators
+	v.Validate(contactRequest.FullName, "full_name").MaxLength(20)
+	v.Validate(contactRequest.Email, "email").Default("Custom Email Validation Message").Classify("email-class").Email()
+	v.Validate(contactRequest.Comments, "comments").TrimSpace().MinLength(10)
+
+	return v.Errors
+}
+
+type ContactRequest struct {
+	FullName string `form:"full_name" binding:"required"`
+	Email    string `form:"email" binding:"required"`
+	Subject  string `form:"subject"`
+	Comments string `form:"comments"`
 }
 ```
 
