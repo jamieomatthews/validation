@@ -2,7 +2,7 @@
 
 The idea behind this repo is to give some nice default validation handlers to complement the [Martini Bind Contrib Package](https://github.com/martini-contrib/binding).  
 
-Heres an example of the syntax we are going for: (thanks Matt for suggesting)
+Heres an example of the syntax we are going for: (thanks [Matt](https://github.com/mholt) for suggesting)
 ```go
 func (bp *BlogPost) Validate(errors binding.Errors, req *http.Request) Errors {
     v := validator.New(errors, req)
@@ -25,14 +25,15 @@ My goal is to make this actually work with any web framework, as it doesnt only 
 Here are some validations I have created so far:
 Validations to perform:
 
--  Minimum Length / Max Length
--  Matches Pattern (takes Regex)
--  Email (uses matches pattern)
+-  **MaxLength(maxLength int) / MinLength(minLength int)** - works for strings, arrays, and maps
+-  **Matches(regex *regexp.Regexp)** - returns true if it meets the regex
+-  **Email()** - uses matches pattern
 
 As well as some utilities, like
-- TrimSpace
-- Default (overrides default error)
-- Classify (sets classification)
+
+-   **TrimSpace()** - trims whitespace
+-   **Default(message string)** - overrides default error message
+-   **Classify(classification string)** - sets classification
 
 
 More that I want to add when I have time:
