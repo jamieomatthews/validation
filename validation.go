@@ -14,6 +14,19 @@ type Validation struct {
 	Request *http.Request
 }
 
+type Errors interface {
+	Has(string) bool
+	HasField(string) bool
+	Add([]string, string, string)
+	Get(int)
+}
+
+type Error interface {
+	Fields() []string
+	Classification() string
+	Message() string
+}
+
 //represents one 'set' of validation errors.
 type Set struct {
 	Field          interface{} //a pointer to the passed in feild
