@@ -27,6 +27,16 @@ type Error interface {
 	Message() string
 }
 
+//a struct that maps errors.  errors can span multiple feilds,
+//and each field can have mutliple errors
+type error struct {
+	fields         []string // name(s) of the fields involved, if any
+	classification string   // error type or category
+	message        string   // human-readable or detailed message
+}
+
+type errors []error
+
 //represents one 'set' of validation errors.
 type Set struct {
 	Field          interface{} //a pointer to the passed in feild
@@ -36,14 +46,6 @@ type Set struct {
 	message        string
 	Validation     *Validation //for now, keep a reference to the validation to map errors back
 }
-
-// //a struct that maps errors.  errors can span multiple feilds,
-// //and each field can have mutliple errors
-// type Error struct {
-// 	FieldNames     []string // name(s) of the fields involved, if any
-// 	Classification string   // error type or category
-// 	Message        string   // human-readable or detailed message
-// }
 
 func New(errors binding.Errors, request *http.Request) *Validation {
 	return &Validation{Errors: errors, Request: request}
