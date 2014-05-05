@@ -18,9 +18,9 @@ type Validation struct {
 type Set struct {
 	Field          interface{} //a pointer to the passed in feild
 	Key            string      //string key pulled from the field
-	IsValid        bool
-	Classification string
-	Message        string
+	isValid        bool
+	classification string
+	message        string
 	Validation     *Validation //for now, keep a reference to the validation to map errors back
 }
 
@@ -37,7 +37,7 @@ func New(errors binding.Errors, request *http.Request) *Validation {
 }
 
 func (v *Validation) Validate(field interface{}, key string) *Set {
-	s := &Set{Field: field, Key: key, IsValid: true, Validation: v}
+	s := &Set{Field: field, Key: key, isValid: true, Validation: v}
 
 	return s
 }
@@ -77,12 +77,12 @@ func (s *Set) Email() *Set {
 }
 
 func (s *Set) Classify(str string) *Set {
-	s.Classification = str
+	s.classification = str
 	return s
 }
 
-func (s *Set) Default(message string) *Set {
-	s.Message = message
+func (s *Set) Message(message string) *Set {
+	s.message = message
 	return s
 }
 func (s *Set) TrimSpace() *Set {
@@ -93,10 +93,10 @@ func (s *Set) TrimSpace() *Set {
 }
 
 func (s *Set) getMessage(val Validator) string {
-	if s.Message == "" {
+	if s.message == "" {
 		return val.DefaultMessage()
 	}
-	return s.Message
+	return s.message
 }
 
 func (s *Set) Len() int {
@@ -124,12 +124,11 @@ func (s *Set) validate(validator Validator, obj interface{}) *Set {
 	//check if the rule is valid
 	if validator.IsValid(obj) {
 		fmt.Println("Validated")
-		s.IsValid = true
 		return s
 	}
 
 	//else, add a new validation error
-	s.Validation.AddError(binding.Error{FieldNames: []string{s.Key}, Classification: s.Classification, Message: s.getMessage(validator)})
-	s.IsValid = false
+	s.Validation.AddError(binding.Error{FieldNames: []string{s.Key}, Classification: s.classification, Message: s.getMessage(validator)})
+	s.isValid = false
 	return s
 }
