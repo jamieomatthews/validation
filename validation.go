@@ -5,94 +5,11 @@ import (
 	"net/http"
 	"regexp"
 	"strings"
-
-	"github.com/martini-contrib/binding"
 )
 
 type Validation struct {
-	Errors  binding.Errors
+	Errors  Errors
 	Request *http.Request
-}
-
-type Errors interface {
-	WithClass(classification string) Errors
-	ForField(name string) Errors
-	Get(class, fieldName string) Errors
-	Add(fieldNames []string, classification string, message string)
-}
-
-type Error interface {
-	Fields() []string
-	Classification() string
-	Message() string
-}
-
-//a struct that maps errors.  errors can span multiple feilds,
-//and each field can have mutliple errors
-type error struct {
-	fields         []string // name(s) of the fields involved, if any
-	classification string   // error type or category
-	message        string   // human-readable or detailed message
-}
-
-type errors struct {
-	errors []error
-}
-
-func (errs *errors) WithClass(classification string) Errors {
-	errorsWithClass := &errors{}
-	for _, er := range errs.errors {
-		if er.Classification() == classification {
-			errorsWithClass.errors = append(errorsWithClass.errors, er)
-		}
-	}
-	return errorsWithClass
-}
-
-func (errs *errors) ForField(name string) Errors {
-	errorsWithField := &errors{}
-	for _, er := range errs.errors {
-		if stringInSlice(name, er.Fields()) {
-			errorsWithField.errors = append(errorsWithField.errors, er)
-		}
-	}
-	return errorsWithField
-}
-
-func (errs *errors) Get(class, fieldName string) Errors {
-	errToReturn := &errors{}
-	for _, er := range errs.errors {
-		if stringInSlice(fieldName, er.Fields()) && er.Classification() == class {
-			errToReturn.errors = append(errToReturn.errors, er)
-		}
-	}
-	return errToReturn
-}
-
-func stringInSlice(a string, list []string) bool {
-	for _, b := range list {
-		if b == a {
-			return true
-		}
-	}
-	return false
-}
-
-func (errs *errors) Add(fieldNames []string, classification string, message string) {
-	er := error{fields: fieldNames, classification: classification, message: message}
-	errs.errors = append(errs.errors, er)
-}
-
-func (e *error) Fields() []string {
-	return e.fields
-}
-
-func (e *error) Classification() string {
-	return e.classification
-}
-
-func (e *error) Message() string {
-	return e.message
 }
 
 //represents one 'set' of validation errors.
@@ -105,18 +22,19 @@ type Set struct {
 	Validation     *Validation //for now, keep a reference to the validation to map errors back
 }
 
-func New(errors binding.Errors, request *http.Request) *Validation {
+func New(errors Errors, request *http.Request) *Validation {
 	return &Validation{Errors: errors, Request: request}
+}
+
+func NewDefault() *Validation {
+	v := &Validation{Errors: &errors{}, Request: &http.Request{}}
+	return v
 }
 
 func (v *Validation) Validate(field interface{}, key string) *Set {
 	s := &Set{Field: field, Key: key, isValid: true, Validation: v}
 
 	return s
-}
-
-func (v *Validation) AddError(err binding.Error) {
-	v.Errors = append(v.Errors, err)
 }
 
 // func (v *Validation) ToJson() []byte {
@@ -128,7 +46,7 @@ func (v *Validation) AddError(err binding.Error) {
 
 // returns true if the validator has 1 or more errors
 func (s *Set) HasErrors() bool {
-	return len(s.Validation.Errors) > 0
+	return s.Validation.Errors.HasErrors()
 }
 
 func (s *Set) MaxLength(maxLength int) *Set {
@@ -201,7 +119,8 @@ func (s *Set) validate(validator Validator, obj interface{}) *Set {
 	}
 
 	//else, add a new validation error
-	s.Validation.AddError(binding.Error{FieldNames: []string{s.Key}, Classification: s.classification, Message: s.getMessage(validator)})
+	s.Validation.Errors.Add([]string{s.Key}, s.classification, s.getMessage(validator))
+	//s.Validation.AddError(binding.Error{FieldNames: []string{s.Key}, Classification: s.classification, Message: s.getMessage(validator)})
 	s.isValid = false
 	return s
 }
