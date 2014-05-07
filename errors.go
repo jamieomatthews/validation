@@ -5,7 +5,6 @@ type Errors interface {
 	ForField(name string) Errors
 	Get(class, fieldName string) Errors
 	Add(fieldNames []string, classification string, message string)
-	HasErrors() bool
 
 	//for iterating
 	Count() int
@@ -74,10 +73,6 @@ func (errs *errors) Add(fieldNames []string, classification string, message stri
 	errs.errors = append(errs.errors, er)
 }
 
-func (errs *errors) HasErrors() bool {
-	return len(errs.errors) > 0
-}
-
 func (errs *errors) Count() int {
 	return len(errs.errors)
 }
@@ -90,10 +85,10 @@ func (e *error) Fields() []string {
 	return e.fields
 }
 
-func (e error) Classification() string {
+func (e *error) Classification() string {
 	return e.classification
 }
 
-func (e error) Message() string {
+func (e *error) Message() string {
 	return e.message
 }

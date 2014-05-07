@@ -3,12 +3,14 @@ package validation
 import (
 	"fmt"
 	"net/http"
+	"reflect"
 	"regexp"
 	"strings"
 )
 
 type Validation struct {
 	Errors  Errors
+	Obj     interface{}
 	Request *http.Request
 }
 
@@ -22,19 +24,44 @@ type Set struct {
 	Validation     *Validation //for now, keep a reference to the validation to map errors back
 }
 
-func New(errors Errors, request *http.Request) *Validation {
-	return &Validation{Errors: errors, Request: request}
+func New(errors Errors, obj interface{}) *Validation {
+	return &Validation{Errors: errors, Obj: obj}
 }
 
-func NewDefault() *Validation {
-	v := &Validation{Errors: &errors{}, Request: &http.Request{}}
-	return v
-}
+func (v *Validation) Validate(field interface{}) *Set {
 
-func (v *Validation) Validate(field interface{}, key string) *Set {
-	s := &Set{Field: field, Key: key, isValid: true, Validation: v}
+	s := &Set{Field: field, isValid: true, Validation: v}
+	key := v.getKeyForField(field)
+	fmt.Println("Got Key? ", key)
+	s.Key = key
 
 	return s
+}
+
+func (v *Validation) getKeyForField(passedField interface{}) string {
+	typObj := reflect.TypeOf(v.Obj)
+	fmt.Println("TypeObj:", typObj)
+
+	typField := reflect.TypeOf(passedField)
+	valField := reflect.ValueOf(passedField)
+
+	if typObj.Kind() == reflect.Ptr {
+		typObj = typObj.Elem()
+	}
+
+	if typField.Kind() == reflect.Ptr {
+		typField = typField.Elem()
+		valField = valField.Elem()
+	}
+
+	for i := 0; i < typObj.NumField(); i++ {
+		field := typObj.Field(i)
+		fVal := reflect.ValueOf(field)
+		if fVal.Pointer() == valField.Pointer() {
+			return field.Tag.Get("form")
+		}
+	}
+	return ""
 }
 
 // func (v *Validation) ToJson() []byte {
@@ -46,7 +73,7 @@ func (v *Validation) Validate(field interface{}, key string) *Set {
 
 // returns true if the validator has 1 or more errors
 func (s *Set) HasErrors() bool {
-	return s.Validation.Errors.HasErrors()
+	return s.Validation.Errors.Count() > 0
 }
 
 func (s *Set) MaxLength(maxLength int) *Set {
