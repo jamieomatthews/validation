@@ -10,7 +10,7 @@ import (
 
 type Validation struct {
 	Errors  Errors
-	Obj     interface{}
+	Obj     interface{} //the top-most model struct being validated
 	Request *http.Request
 }
 
@@ -123,15 +123,24 @@ func (s *Set) getMessage(val Validator) string {
 }
 
 func (s *Set) Len() int {
-	if str, ok := s.Field.(string); ok {
-		return len(str)
+
+	switch x := s.Field.(type) {
+	case string:
+		return len(x)
+
+	case *string:
+		return len(*x)
+
+	case []interface{}:
+		return len(x)
+	case *[]interface{}:
+		return len(*x)
+	case map[interface{}]interface{}:
+		return len(x)
+	case *map[interface{}]interface{}:
+		return len(*x)
 	}
-	if array, ok := s.Field.([]interface{}); ok {
-		return len(array)
-	}
-	if m, ok := s.Field.(map[interface{}]interface{}); ok {
-		return len(m)
-	}
+
 	return 0
 }
 

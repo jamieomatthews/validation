@@ -25,8 +25,9 @@ type error struct {
 	message        string   // human-readable or detailed message
 }
 
+//a struct that holds an array of pointers to error objects
 type errors struct {
-	errors []error
+	errors []*error
 }
 
 func (errs *errors) WithClass(classification string) Errors {
@@ -70,7 +71,7 @@ func stringInSlice(a string, list []string) bool {
 
 func (errs *errors) Add(fieldNames []string, classification string, message string) {
 	er := error{fields: fieldNames, classification: classification, message: message}
-	errs.errors = append(errs.errors, er)
+	errs.errors = append(errs.errors, &er)
 }
 
 func (errs *errors) Count() int {
@@ -78,7 +79,7 @@ func (errs *errors) Count() int {
 }
 
 func (errs *errors) At(index int) Error {
-	return &errs.errors[index]
+	return errs.errors[index]
 }
 
 func (e *error) Fields() []string {
