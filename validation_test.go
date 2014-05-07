@@ -6,10 +6,10 @@ import (
 )
 
 type User struct {
-	name    string `form:name-field`
-	age     int
-	email   string
-	profile string
+	Name    string `form:"aName"`
+	Age     int
+	Email   string
+	Profile string
 }
 
 func TestValidation(t *testing.T) {
@@ -20,9 +20,9 @@ func TestValidation(t *testing.T) {
 	v := &Validation{Errors: &errors, Obj: user}
 
 	// //run some validators
-	v.Validate(&user.name).MaxLength(15)
-	v.Validate(&user.email).Message("Custom Email Validation Message").Classify("email-class").Email()
-	v.Validate(&user.profile).TrimSpace().MinLength(10)
+	v.Validate(&user.Name).MaxLength(10)
+	//v.Validate(&user.Email).Message("Custom Email Validation Message").Classify("email-class").Email()
+	//v.Validate(&user.Profile).TrimSpace().MinLength(10)
 
 	for i := 0; i < v.Errors.Count(); i++ {
 		err := v.Errors.At(i)

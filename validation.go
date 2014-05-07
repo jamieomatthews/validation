@@ -40,6 +40,7 @@ func (v *Validation) Validate(field interface{}) *Set {
 
 func (v *Validation) getKeyForField(passedField interface{}) string {
 	typObj := reflect.TypeOf(v.Obj)
+	valObj := reflect.ValueOf(v.Obj)
 	fmt.Println("TypeObj:", typObj)
 
 	typField := reflect.TypeOf(passedField)
@@ -47,6 +48,7 @@ func (v *Validation) getKeyForField(passedField interface{}) string {
 
 	if typObj.Kind() == reflect.Ptr {
 		typObj = typObj.Elem()
+		valObj = valObj.Elem()
 	}
 
 	if typField.Kind() == reflect.Ptr {
@@ -56,12 +58,15 @@ func (v *Validation) getKeyForField(passedField interface{}) string {
 
 	for i := 0; i < typObj.NumField(); i++ {
 		field := typObj.Field(i)
-		fVal := reflect.ValueOf(field)
-		if fVal.Pointer() == valField.Pointer() {
+		fieldValue := valObj.Field(i).Interface()
+		passedValue := valField.Interface()
+		fmt.Println("Field:", fieldValue, " passedField:", passedValue)
+		if passedValue == fieldValue {
+			fmt.Println("Is Equal!!")
 			return field.Tag.Get("form")
 		}
 	}
-	return ""
+	return "not found"
 }
 
 // func (v *Validation) ToJson() []byte {
