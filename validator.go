@@ -2,7 +2,9 @@ package validation
 
 import (
 	"fmt"
+	"reflect"
 	"regexp"
+	"time"
 )
 
 //each validator will just implement this interface,
@@ -10,6 +12,38 @@ import (
 type Validator interface {
 	IsValid(interface{}) bool
 	DefaultMessage() string
+}
+
+type Required struct {
+	Key string
+}
+
+func (r Required) IsValid(obj interface{}) bool {
+	if obj == nil {
+		return false
+	}
+
+	if str, ok := obj.(string); ok {
+		return len(str) > 0
+	}
+	if b, ok := obj.(bool); ok {
+		return b
+	}
+	if i, ok := obj.(int); ok {
+		return i != 0
+	}
+	if t, ok := obj.(time.Time); ok {
+		return !t.IsZero()
+	}
+	v := reflect.ValueOf(obj)
+	if v.Kind() == reflect.Slice {
+		return v.Len() > 0
+	}
+	return true
+}
+
+func (r Required) DefaultMessage() string {
+	return fmt.Sprint("This Field Is Required")
 }
 
 //max length validator
@@ -44,6 +78,39 @@ func (min MinLength) IsValid(obj interface{}) bool {
 		return num >= min.MinLength
 	}
 	return false
+}
+
+type Max struct {
+	Max int
+}
+
+func (m Max) IsValid(obj interface{}) bool {
+	num, ok := obj.(int)
+	if ok {
+		return num <= m.Max
+	}
+	return false
+}
+
+func (m Max) DefaultMessage() string {
+	return fmt.Sprintf("Cannot be larger than %s", m.Max)
+}
+
+//min value, only works on integers
+type Min struct {
+	Min int
+}
+
+func (m Min) IsValid(obj interface{}) bool {
+	num, ok := obj.(int)
+	if ok {
+		return num >= m.Min
+	}
+	return false
+}
+
+func (m Min) DefaultMessage() string {
+	return fmt.Sprintf("Must be at least %s", m.Min)
 }
 
 //matches pattern validator

@@ -69,12 +69,9 @@ func (v *Validation) getKeyForField(passedField interface{}) string {
 	return "not found"
 }
 
-// func (v *Validation) ToJson() []byte {
-// 	m := make(map[string][]string)
-// 	for err := range v.Errors {
-// 		m[err.FieldNames[0]] =
-// 	}
-// }
+func (s *Set) Required() *Set {
+	return s.validate(Required{}, s.Field)
+}
 
 // returns true if the validator has 1 or more errors
 func (s *Set) HasErrors() bool {
@@ -88,6 +85,14 @@ func (s *Set) MaxLength(maxLength int) *Set {
 func (s *Set) MinLength(minLength int) *Set {
 	fmt.Println("Min Length: '", s.Field, "'")
 	return s.validate(MinLength{MinLength: minLength}, s.Len())
+}
+
+func (s *Set) Max(max int) *Set {
+	return s.validate(Max{max}, s.Field)
+}
+
+func (s *Set) Min(min int) *Set {
+	return s.validate(Min{min}, s.Field)
 }
 
 func (s *Set) Match(strMatch string, regex *regexp.Regexp) *Set {
