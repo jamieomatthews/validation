@@ -75,7 +75,7 @@ func (s *Set) Required() *Set {
 
 // returns true if the validator has 1 or more errors
 func (s *Set) HasErrors() bool {
-	return s.Validation.Errors.Count() > 0
+	return s.Validation.Errors.Len() > 0
 }
 
 func (s *Set) MaxLength(maxLength int) *Set {

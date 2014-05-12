@@ -24,7 +24,7 @@ func TestValidation(t *testing.T) {
 	//v.Validate(&user.Email).Message("Custom Email Validation Message").Classify("email-class").Email()
 	//v.Validate(&user.Profile).TrimSpace().MinLength(10)
 
-	for i := 0; i < v.Errors.Count(); i++ {
+	for i := 0; i < v.Errors.Len(); i++ {
 		err := v.Errors.At(i)
 		fmt.Println("Error: ", err)
 	}

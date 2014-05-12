@@ -7,7 +7,7 @@ type Errors interface {
 	Add(fieldNames []string, classification string, message string)
 
 	//for iterating
-	Count() int
+	Len() int
 	At(index int) Error
 }
 
@@ -74,7 +74,7 @@ func (errs *errors) Add(fieldNames []string, classification string, message stri
 	errs.errors = append(errs.errors, &er)
 }
 
-func (errs *errors) Count() int {
+func (errs *errors) Len() int {
 	return len(errs.errors)
 }
 
