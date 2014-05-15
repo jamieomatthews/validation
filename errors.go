@@ -1,20 +1,10 @@
 package validation
 
-type Errors interface {
-	WithClass(classification string) Errors
-	ForField(name string) Errors
-	Get(class, fieldName string) Errors
-	Add(fieldNames []string, classification string, message string)
-
-	//for iterating
-	Len() int
-	At(index int) Error
-}
-
 type Error interface {
 	Fields() []string
 	Classification() string
 	Message() string
+	New(fields []string, classification string, message string) Error //constructor
 }
 
 //a struct that maps errors.  errors can span multiple feilds,
@@ -26,35 +16,33 @@ type error struct {
 }
 
 //a struct that holds an array of pointers to error objects
-type errors struct {
-	errors []*error
-}
+type Errors []error
 
-func (errs *errors) WithClass(classification string) Errors {
-	errorsWithClass := &errors{}
-	for _, er := range errs.errors {
+func (errs Errors) WithClass(classification string) Errors {
+	errorsWithClass := Errors{}
+	for _, er := range errs {
 		if er.Classification() == classification {
-			errorsWithClass.errors = append(errorsWithClass.errors, er)
+			errorsWithClass = append(errorsWithClass, er)
 		}
 	}
 	return errorsWithClass
 }
 
-func (errs *errors) ForField(name string) Errors {
-	errorsWithField := &errors{}
-	for _, er := range errs.errors {
+func (errs Errors) ForField(name string) Errors {
+	errorsWithField := Errors{}
+	for _, er := range errs {
 		if stringInSlice(name, er.Fields()) {
-			errorsWithField.errors = append(errorsWithField.errors, er)
+			errorsWithField = append(errorsWithField, er)
 		}
 	}
 	return errorsWithField
 }
 
-func (errs *errors) Get(class, fieldName string) Errors {
-	errToReturn := &errors{}
-	for _, er := range errs.errors {
+func (errs Errors) Get(class, fieldName string) Errors {
+	errToReturn := Errors{}
+	for _, er := range errs {
 		if stringInSlice(fieldName, er.Fields()) && er.Classification() == class {
-			errToReturn.errors = append(errToReturn.errors, er)
+			errToReturn = append(errToReturn, er)
 		}
 	}
 	return errToReturn
@@ -69,19 +57,22 @@ func stringInSlice(a string, list []string) bool {
 	return false
 }
 
-func (errs *errors) Add(fieldNames []string, classification string, message string) {
-	er := error{fields: fieldNames, classification: classification, message: message}
-	errs.errors = append(errs.errors, &er)
+func (errs Errors) Len() int {
+	return len(errs)
 }
 
-func (errs *errors) Len() int {
-	return len(errs.errors)
+func (errs Errors) At(index int) *error {
+	return &errs[index]
 }
 
-func (errs *errors) At(index int) Error {
-	return errs.errors[index]
-}
+// func (errs Errors) MapErrors() []byte {
 
+// }
+
+func (e *error) New(fields []string, classification string, message string) Error {
+	e = error{fields: fields, classification: classification, message: message}
+	return e
+}
 func (e *error) Fields() []string {
 	return e.fields
 }

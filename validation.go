@@ -17,7 +17,7 @@ type Validation struct {
 //represents one 'set' of validation errors.
 type Set struct {
 	Field          interface{} //a pointer to the passed in feild
-	Key            string      //string key pulled from the field
+	key            string      //string key pulled from the field
 	isValid        bool
 	classification string
 	message        string
@@ -32,25 +32,26 @@ func (v *Validation) Validate(field interface{}) *Set {
 
 	s := &Set{Field: field, isValid: true, Validation: v}
 	key := v.getKeyForField(field)
-	fmt.Println("Got Key? ", key)
-	s.Key = key
+	s.key = key
 
 	return s
 }
 
+//experimenting with trying to match the field with the passed in struct
 func (v *Validation) getKeyForField(passedField interface{}) string {
 	typObj := reflect.TypeOf(v.Obj)
 	valObj := reflect.ValueOf(v.Obj)
-	fmt.Println("TypeObj:", typObj)
 
 	typField := reflect.TypeOf(passedField)
 	valField := reflect.ValueOf(passedField)
 
+	//if our struct is a pointer, dereference it
 	if typObj.Kind() == reflect.Ptr {
 		typObj = typObj.Elem()
 		valObj = valObj.Elem()
 	}
 
+	//if our passed in field is a pointer, dereference it
 	if typField.Kind() == reflect.Ptr {
 		typField = typField.Elem()
 		valField = valField.Elem()
@@ -60,15 +61,17 @@ func (v *Validation) getKeyForField(passedField interface{}) string {
 		field := typObj.Field(i)
 		fieldValue := valObj.Field(i).Interface()
 		passedValue := valField.Interface()
-		fmt.Println("Field:", fieldValue, " passedField:", passedValue)
 		if passedValue == fieldValue {
-			fmt.Println("Is Equal!!")
 			return field.Tag.Get("form")
 		}
 	}
 	return "not found"
 }
 
+func (s *Set) Key(key string) *Set {
+	s.key = key
+	return s
+}
 func (s *Set) Required() *Set {
 	return s.validate(Required{}, s.Field)
 }
@@ -153,6 +156,10 @@ func (s *Set) toString() string {
 	if str, ok := s.Field.(string); ok {
 		return str
 	}
+
+	if str, ok := s.Field.(*string); ok {
+		return *str
+	}
 	panic("This method requires a string value")
 }
 
@@ -164,9 +171,10 @@ func (s *Set) validate(validator Validator, obj interface{}) *Set {
 		return s
 	}
 
+	fmt.Println("Not Validated, adding error")
 	//else, add a new validation error
-	s.Validation.Errors.Add([]string{s.Key}, s.classification, s.getMessage(validator))
-	//s.Validation.AddError(binding.Error{FieldNames: []string{s.Key}, Classification: s.classification, Message: s.getMessage(validator)})
+	er := Error.New([]string{s.key}, s.classification, s.getMessage(validator))
+	s.Validation.Errors = append(s.Validation.Errors, er)
 	s.isValid = false
 	return s
 }
