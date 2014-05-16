@@ -16,11 +16,13 @@ type Validation struct {
 
 //represents one 'set' of validation errors.
 type Set struct {
-	Field      interface{} //a pointer to the passed in feild
-	Key        string      //string key pulled from the field
-	isValid    bool
-	Error      error
-	Validation *Validation //for now, keep a reference to the validation to map errors back
+	Field          interface{} //a pointer to the passed in feild
+	key            string      //string key pulled from the field
+	isValid        bool
+	classification string
+	message        string
+	Error          validationError
+	Validation     *Validation //for now, keep a reference to the validation to map errors back
 }
 
 func New(errors Errors, obj interface{}) *Validation {
@@ -31,25 +33,26 @@ func (v *Validation) Validate(field interface{}) *Set {
 
 	s := &Set{Field: field, isValid: true, Validation: v}
 	key := v.getKeyForField(field)
-	fmt.Println("Got Key? ", key)
-	s.Key = key
+	s.key = key
 
 	return s
 }
 
+//experimenting with trying to match the field with the passed in struct
 func (v *Validation) getKeyForField(passedField interface{}) string {
 	typObj := reflect.TypeOf(v.Obj)
 	valObj := reflect.ValueOf(v.Obj)
-	fmt.Println("TypeObj:", typObj)
 
 	typField := reflect.TypeOf(passedField)
 	valField := reflect.ValueOf(passedField)
 
+	//if our struct is a pointer, dereference it
 	if typObj.Kind() == reflect.Ptr {
 		typObj = typObj.Elem()
 		valObj = valObj.Elem()
 	}
 
+	//if our passed in field is a pointer, dereference it
 	if typField.Kind() == reflect.Ptr {
 		typField = typField.Elem()
 		valField = valField.Elem()
@@ -59,25 +62,24 @@ func (v *Validation) getKeyForField(passedField interface{}) string {
 		field := typObj.Field(i)
 		fieldValue := valObj.Field(i).Interface()
 		passedValue := valField.Interface()
-		fmt.Println("Field:", fieldValue, " passedField:", passedValue)
 		if passedValue == fieldValue {
-			fmt.Println("Is Equal!!")
 			return field.Tag.Get("form")
 		}
 	}
 	return "not found"
 }
 
-// func (v *Validation) ToJson() []byte {
-// 	m := make(map[string][]string)
-// 	for err := range v.Errors {
-// 		m[err.FieldNames[0]] =
-// 	}
-// }
+func (s *Set) Key(key string) *Set {
+	s.key = key
+	return s
+}
+func (s *Set) Required() *Set {
+	return s.validate(Required{}, s.Field)
+}
 
 // returns true if the validator has 1 or more errors
 func (s *Set) HasErrors() bool {
-	return s.Validation.Errors.Count() > 0
+	return s.Validation.Errors.Len() > 0
 }
 
 func (s *Set) MaxLength(maxLength int) *Set {
@@ -87,6 +89,14 @@ func (s *Set) MaxLength(maxLength int) *Set {
 func (s *Set) MinLength(minLength int) *Set {
 	fmt.Println("Min Length: '", s.Field, "'")
 	return s.validate(MinLength{MinLength: minLength}, s.Len())
+}
+
+func (s *Set) Max(max int) *Set {
+	return s.validate(Max{max}, s.Field)
+}
+
+func (s *Set) Min(min int) *Set {
+	return s.validate(Min{min}, s.Field)
 }
 
 func (s *Set) Match(strMatch string, regex *regexp.Regexp) *Set {
@@ -147,6 +157,10 @@ func (s *Set) toString() string {
 	if str, ok := s.Field.(string); ok {
 		return str
 	}
+
+	if str, ok := s.Field.(*string); ok {
+		return *str
+	}
 	panic("This method requires a string value")
 }
 
@@ -158,9 +172,10 @@ func (s *Set) validate(validator Validator, obj interface{}) *Set {
 		return s
 	}
 
+	fmt.Println("Not Validated, adding error")
 	//else, add a new validation error
-	s.Validation.Errors.Add([]string{s.Key}, s.classification, s.getMessage(validator))
-	//s.Validation.AddError(binding.Error{FieldNames: []string{s.Key}, Classification: s.classification, Message: s.getMessage(validator)})
+	s.Validation.Errors.Add([]string{s.key}, s.classification, s.getMessage(validator))
+	//s.Validation.Errors = append(s.Validation.Errors, er)
 	s.isValid = false
 	return s
 }
