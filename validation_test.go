@@ -34,4 +34,6 @@ func TestValidation(t *testing.T) {
 			fmt.Printf("\t%s: '%s')\n", err.fields, err.msg)
 		}
 	}
+
+	fmt.Println("\n\n", v.MapErrors())
 }

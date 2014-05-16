@@ -1,6 +1,7 @@
 package validation
 
 import (
+	"encoding/json"
 	"fmt"
 	"net/http"
 	"reflect"
@@ -36,6 +37,15 @@ func (v *Validation) Validate(field interface{}) *Set {
 	s.key = key
 
 	return s
+}
+
+func (v *Validation) MapErrors() string {
+	if errSlice, ok := v.Errors.(*ValidationErrors); ok {
+		if b, err := json.Marshal(errSlice); err == nil {
+			return string(b)
+		}
+	}
+	return ""
 }
 
 //experimenting with trying to match the field with the passed in struct
