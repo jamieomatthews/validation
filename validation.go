@@ -16,12 +16,11 @@ type Validation struct {
 
 //represents one 'set' of validation errors.
 type Set struct {
-	Field          interface{} //a pointer to the passed in feild
-	Key            string      //string key pulled from the field
-	isValid        bool
-	classification string
-	message        string
-	Validation     *Validation //for now, keep a reference to the validation to map errors back
+	Field      interface{} //a pointer to the passed in feild
+	Key        string      //string key pulled from the field
+	isValid    bool
+	Error      error
+	Validation *Validation //for now, keep a reference to the validation to map errors back
 }
 
 func New(errors Errors, obj interface{}) *Validation {
