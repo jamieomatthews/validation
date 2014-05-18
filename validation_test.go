@@ -19,7 +19,7 @@ func TestValidation(t *testing.T) {
 	//as well as an array of type Error (interface can be found in errors.go)
 	//the point of this is so that you can plug the error interface into your own errors implementation, or use mine
 
-	errors := []error{}
+	errors := &ValidationErrors{}
 	v := &Validation{Errors: errors, Obj: user}
 
 	// //run some validators
@@ -27,9 +27,13 @@ func TestValidation(t *testing.T) {
 	v.Validate(&user.Email).Message("Custom Email Validation Message").Classify("email-class").Email()
 	v.Validate(&user.Profile).TrimSpace().MaxLength(10)
 
-	fmt.Println("Errors len = ", len(v.Errors))
-	for _, err := range v.Errors {
-		fmt.Println("Error: ", err)
-		//fmt.Println(err.fields, err.Message)
+	fmt.Println("Errors len = ", v.Errors.Len())
+	//must use type assertion because validate returns an interface
+	if myArray, ok := v.Errors.(*ValidationErrors); ok {
+		for _, err := range *myArray {
+			fmt.Printf("\t%s: '%s')\n", err.fields, err.msg)
+		}
 	}
+
+	fmt.Println("\n\n", v.MapErrors())
 }

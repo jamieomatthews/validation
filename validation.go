@@ -1,6 +1,7 @@
 package validation
 
 import (
+	"encoding/json"
 	"fmt"
 	"net/http"
 	"reflect"
@@ -21,6 +22,7 @@ type Set struct {
 	isValid        bool
 	classification string
 	message        string
+	Error          validationError
 	Validation     *Validation //for now, keep a reference to the validation to map errors back
 }
 
@@ -35,6 +37,15 @@ func (v *Validation) Validate(field interface{}) *Set {
 	s.key = key
 
 	return s
+}
+
+func (v *Validation) MapErrors() string {
+	if errSlice, ok := v.Errors.(*ValidationErrors); ok {
+		if b, err := json.Marshal(errSlice); err == nil {
+			return string(b)
+		}
+	}
+	return ""
 }
 
 //experimenting with trying to match the field with the passed in struct
@@ -173,8 +184,8 @@ func (s *Set) validate(validator Validator, obj interface{}) *Set {
 
 	fmt.Println("Not Validated, adding error")
 	//else, add a new validation error
-	er := Error{}.New([]string{s.key}, s.classification, s.getMessage(validator))
-	s.Validation.Errors = append(s.Validation.Errors, er)
+	s.Validation.Errors.Add([]string{s.key}, s.classification, s.getMessage(validator))
+	//s.Validation.Errors = append(s.Validation.Errors, er)
 	s.isValid = false
 	return s
 }

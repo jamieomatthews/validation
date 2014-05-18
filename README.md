@@ -50,7 +50,7 @@ This will generate something like:
 ]
 ```
 
-My goal is to make this actually work with any web framework, as it doesnt only apply to Martini.  *For now* I have hard coded in the binding.Errors as the internal error structure, but I will swap this out ASAP for an interface structure that would let anyone utilize it.
+My goal is to make this actually work with any web framework, as it doesnt only apply to Martini.  
 
 Here are some validations I have created so far:
 Validations to perform:
@@ -62,7 +62,7 @@ Validations to perform:
 As well as some utilities, like
 
 -   **TrimSpace()** - trims whitespace
--   **Default(message string)** - overrides default error message
+-   **Message(message string)** - overrides default error message
 -   **Classify(classification string)** - sets classification
 
 
@@ -75,6 +75,10 @@ More that I want to add when I have time:
 -  Credit Card Number (meets checksum)
 -  Use matches pattern to do URL, and other pattern like examples
 
+
+
+###Note
+>Also note, for now I am experimenting with getting the form key out of the struct as the default key.  I really want this to work moving forward so I'm setting up the syntax now.  Some have reported its not super robust, so if you want to set a custom key, use the `.Key("key")` method.
 
 
 
