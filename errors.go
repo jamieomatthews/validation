@@ -1,5 +1,8 @@
 package validation
 
+type Errors interface {
+	Add(err Error)
+}
 type Error interface {
 	Fields() []string
 	Classification() string
@@ -16,7 +19,7 @@ type error struct {
 }
 
 //a struct that holds an array of pointers to error objects
-type Errors []error
+type errors []error
 
 func (errs Errors) WithClass(classification string) Errors {
 	errorsWithClass := Errors{}
@@ -70,7 +73,7 @@ func (errs Errors) At(index int) *error {
 // }
 
 func (e *error) New(fields []string, classification string, message string) Error {
-	e = error{fields: fields, classification: classification, message: message}
+	e = &error{fields: fields, classification: classification, message: message}
 	return e
 }
 func (e *error) Fields() []string {

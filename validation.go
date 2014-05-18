@@ -173,7 +173,7 @@ func (s *Set) validate(validator Validator, obj interface{}) *Set {
 
 	fmt.Println("Not Validated, adding error")
 	//else, add a new validation error
-	er := Error.New([]string{s.key}, s.classification, s.getMessage(validator))
+	er := Error{}.New([]string{s.key}, s.classification, s.getMessage(validator))
 	s.Validation.Errors = append(s.Validation.Errors, er)
 	s.isValid = false
 	return s
