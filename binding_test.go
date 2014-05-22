@@ -9,7 +9,7 @@ import (
 )
 
 func TestBinding(t *testing.T) {
-	user := &User{"John Doe The Fourth", 20, "john@gmail", "John's profile is a long string of text that is more than 20 characters long"}
+	user := &User{Name: "John Doe The Fourth", Age: 20, Email: "john@gmail", Profile: "John's profile is a long string of text that is more than 20 characters long"}
 
 	//to initialize a validation object, we need to pass in the model object (struct) being validated
 	//as well as an array of type Error (interface can be found in errors.go)

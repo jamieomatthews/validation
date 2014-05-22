@@ -63,30 +63,36 @@ Also, make sure to pass the struct fields in as pointers if you want the validat
 ###API
 Pre-Build Validators:
 
--  **MaxLength(maxLength int) / MinLength(minLength int)** - works for strings, arrays, and maps
+-  **MaxLength(maxLength int) / MinLength(minLength int)** - works on strings, arrays, and maps
+-  **Range(min, max)** - short hand for calling MinLength(int) & MaxLength(int)
 -  **Matches(regex *regexp.Regexp)** - returns true if it meets the regex
+-  **NoMatch(regex *regexp.Regex)** 
 -  **Email()** - uses matches pattern
+-  **CreditCard()** matches Visa, MasterCard, American Express, Diners Club, Discover, and JCB cards
+-  **URL()** matches most url schemes
 
 As well as some utilities, like
 
 -   **TrimSpace()** - trims whitespace
 -   **Message(message string)** - overrides default error message
 -   **Classify(classification string)** - sets classification
-
+-   **Key(str string)** - set the key to map out to
 
 More that I want to add when I have time:
 
 -  EqualTo (other form field)
--  Range length
--  Min/Max value (numbers)
--  Credit Card Number (meets checksum)
--  Credit Card Number (meets checksum)
--  Use matches pattern to do URL, and other pattern like examples
+-  Use matches pattern to do other pattern like examples
 
 
 
+>Note: The tests are not complete, and are not really semantic tests, but should give you a good idea of where to start.  These will be improved ASAP
 
+**Contributions welcome!**
+Todo's:
 
+- Write some validators on the http.Request.  For example, HasHeader(), etc
+- Improve the syntax to handle multi-field errors
+- Add some of the validators listed as want-to-haves above
 
 Ideas inspired from the [jQuery validation plugin](http://jqueryvalidation.org/documentation/) as well as the way .NET MVC handles [model validation](http://www.asp.net/mvc/tutorials/mvc-4/getting-started-with-aspnet-mvc4/adding-validation-to-the-model).
 

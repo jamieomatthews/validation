@@ -2,6 +2,7 @@ package validation
 
 import (
 	"encoding/json"
+	"fmt"
 	"net/http"
 	"reflect"
 	"regexp"
@@ -11,10 +12,10 @@ import (
 const DefaultKeyTag string = "form"
 
 type Validation struct {
-	Errors  Errors
-	Obj     interface{} //the top-most model struct being validated
-	Request *http.Request
-	keyTag  string //the key that errors will get mapped out to
+	Errors  Errors        //reference to an object that implements the Errors interface
+	Obj     interface{}   //the top-most model struct being validated
+	Request *http.Request //optional feild that can allow us to do some http request validations
+	keyTag  string        //the key that errors will get mapped out to
 }
 
 //represents one 'set' of validation errors.
@@ -26,6 +27,13 @@ type Set struct {
 	Validation *Validation //for now, keep a reference to the validation to map errors back
 }
 
+//call default if you want the internal Error struct implementation
+func DefaultValidation(obj interface{}) *Validation {
+	errs := &ValidationErrors{}
+	return NewValidation(errs, obj)
+}
+
+//Call new validation to pass a custom Errors interface (martini Bind.Errors for example)
 func NewValidation(errors Errors, obj interface{}) *Validation {
 	v := &Validation{Errors: errors, Obj: obj}
 	v.keyTag = DefaultKeyTag
@@ -107,22 +115,32 @@ func (s *Set) MinLength(minLength int) *Set {
 	return s.validate(MinLength{MinLength: minLength}, s.Len())
 }
 
-func (s *Set) Max(max int) *Set {
-	return s.validate(Max{max}, s.Field)
-}
-
-func (s *Set) Min(min int) *Set {
-	return s.validate(Min{min}, s.Field)
+func (s *Set) Range(min int, max int) *Set {
+	return s.validate(Range{MinLength{MinLength: min}, MaxLength{MaxLength: max}}, s.Len())
 }
 
 func (s *Set) Match(strMatch string, regex *regexp.Regexp) *Set {
 	return s.validate(Matches{Regex: regex}, strMatch)
 }
 
+func (s *Set) NoMatch(strMatch string, regexp *regexp.Regexp) *Set {
+	return s.validate(NoMatch{Matches{Regex: regexp}}, strMatch)
+}
+
 func (s *Set) Email() *Set {
-	var emailPattern = regexp.MustCompile("^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\\.[a-zA-Z0-9-.]+$")
 	return s.validate(Email{Matches{emailPattern}}, s.toString())
 }
+
+func (s *Set) CreditCard() *Set {
+	return s.validate(CreditCard{Matches{creditCardPattern}}, s.toString())
+}
+
+func (s *Set) URL() *Set {
+	fmt.Println("URL: ", s.toString())
+	return s.validate(URL{Matches{urlPattern}}, s.toString())
+}
+
+//Utilities
 
 func (s *Set) Classify(str string) *Set {
 	s.Error.class = str
