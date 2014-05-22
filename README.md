@@ -93,5 +93,6 @@ More that I want to add when I have time:
 - Improve the syntax to handle multi-field errors
 - Add some of the validators listed as want-to-haves above
 - **Improve Test Coverage**
+
 Ideas inspired from the [jQuery validation plugin](http://jqueryvalidation.org/documentation/) as well as the way .NET MVC handles [model validation](http://www.asp.net/mvc/tutorials/mvc-4/getting-started-with-aspnet-mvc4/adding-validation-to-the-model).
 
