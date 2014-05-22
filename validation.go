@@ -2,41 +2,48 @@ package validation
 
 import (
 	"encoding/json"
-	"fmt"
 	"net/http"
 	"reflect"
 	"regexp"
 	"strings"
 )
 
+const DefaultKeyTag string = "form"
+
 type Validation struct {
 	Errors  Errors
 	Obj     interface{} //the top-most model struct being validated
 	Request *http.Request
+	keyTag  string //the key that errors will get mapped out to
 }
 
 //represents one 'set' of validation errors.
 type Set struct {
-	Field          interface{} //a pointer to the passed in feild
-	key            string      //string key pulled from the field
-	isValid        bool
-	classification string
-	message        string
-	Error          validationError
-	Validation     *Validation //for now, keep a reference to the validation to map errors back
+	Field      interface{} //a pointer to the passed in feild
+	key        string      //string key pulled from the field
+	isValid    bool
+	Error      validationError
+	Validation *Validation //for now, keep a reference to the validation to map errors back
 }
 
-func New(errors Errors, obj interface{}) *Validation {
-	return &Validation{Errors: errors, Obj: obj}
+func NewValidation(errors Errors, obj interface{}) *Validation {
+	v := &Validation{Errors: errors, Obj: obj}
+	v.keyTag = DefaultKeyTag
+	return v
 }
 
 func (v *Validation) Validate(field interface{}) *Set {
 
 	s := &Set{Field: field, isValid: true, Validation: v}
+
 	key := v.getKeyForField(field)
 	s.key = key
 
 	return s
+}
+
+func (v *Validation) KeyTag(s string) {
+	v.keyTag = s
 }
 
 func (v *Validation) MapErrors() string {
@@ -73,10 +80,10 @@ func (v *Validation) getKeyForField(passedField interface{}) string {
 		fieldValue := valObj.Field(i).Interface()
 		passedValue := valField.Interface()
 		if passedValue == fieldValue {
-			return field.Tag.Get("form")
+			return field.Tag.Get(v.keyTag)
 		}
 	}
-	return "not found"
+	return ""
 }
 
 func (s *Set) Key(key string) *Set {
@@ -97,7 +104,6 @@ func (s *Set) MaxLength(maxLength int) *Set {
 }
 
 func (s *Set) MinLength(minLength int) *Set {
-	fmt.Println("Min Length: '", s.Field, "'")
 	return s.validate(MinLength{MinLength: minLength}, s.Len())
 }
 
@@ -119,12 +125,12 @@ func (s *Set) Email() *Set {
 }
 
 func (s *Set) Classify(str string) *Set {
-	s.classification = str
+	s.Error.class = str
 	return s
 }
 
 func (s *Set) Message(message string) *Set {
-	s.message = message
+	s.Error.msg = message
 	return s
 }
 func (s *Set) TrimSpace() *Set {
@@ -135,10 +141,10 @@ func (s *Set) TrimSpace() *Set {
 }
 
 func (s *Set) getMessage(val Validator) string {
-	if s.message == "" {
+	if s.Error.msg == "" {
 		return val.DefaultMessage()
 	}
-	return s.message
+	return s.Error.msg
 }
 
 func (s *Set) Len() int {
@@ -178,14 +184,11 @@ func (s *Set) toString() string {
 func (s *Set) validate(validator Validator, obj interface{}) *Set {
 	//check if the rule is valid
 	if validator.IsValid(obj) {
-		fmt.Println("Validated")
 		return s
 	}
 
-	fmt.Println("Not Validated, adding error")
 	//else, add a new validation error
-	s.Validation.Errors.Add([]string{s.key}, s.classification, s.getMessage(validator))
-	//s.Validation.Errors = append(s.Validation.Errors, er)
+	s.Validation.Errors.Add([]string{s.key}, s.Error.class, s.getMessage(validator))
 	s.isValid = false
 	return s
 }

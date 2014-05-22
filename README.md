@@ -1,18 +1,18 @@
 ###martini-validate
 
-The idea behind this repo is to give some nice default validation handlers to complement the [Martini Bind Contrib Package](https://github.com/martini-contrib/binding).  
+The idea behind this package is to give some nice default validation handlers for input handlers.  The package was developed with respect to the [MartiniContrib](https://github.com/martini-contrib/binding) repo, but can actually be used very generically by implementing the Errors interface.
 
-Heres an example of the syntax we are going for: (thanks [Matt](https://github.com/mholt) for suggesting)
+###Usage
+
 ```go
-
 func (contactRequest ContactRequest) Validate(errors binding.Errors, req *http.Request) binding.Errors {
 
 	v := validation.New(errors, req)
 
 	// //run some validators
-	v.Validate(contactRequest.FullName, "full_name").MaxLength(20)
-	v.Validate(contactRequest.Email, "email").Default("Custom Email Validation Message").Classify("email-class").Email()
-	v.Validate(contactRequest.Comments, "comments").TrimSpace().MinLength(10)
+	v.Validate(&contactRequest.FullName).Key("fullname").MaxLength(20)
+	v.Validate(&contactRequest.Email).Default("Custom Email Validation Message").Classify("email-class").Email()
+	v.Validate(&contactRequest.Comments).TrimSpace().MinLength(10)
 
 	return v.Errors
 }
@@ -30,7 +30,7 @@ This will generate something like:
 [
     {
         "fieldNames": [
-            "full_name"
+            "fullname"
         ],
         "message": "Maximum Length is 20"
     },
@@ -50,10 +50,18 @@ This will generate something like:
 ]
 ```
 
-My goal is to make this actually work with any web framework, as it doesnt only apply to Martini.  
+###Configuration
 
-Here are some validations I have created so far:
-Validations to perform:
+By default, the validator will grab the `form` key out of the struct tag to use as the output key.  This is nice because if you're using the form tag already you don't have to write out any additional keys, which keeps things DRY.
+
+To change what struct tag will be used to map the errors, use Validation.KeyTag(string).
+
+Keys can also be specified on per validation basis by chaining .Key(string).  Note that you must use this *before* you call the validator, as errors get mapped immeditaly after you call a validator. 
+
+Also, make sure to pass the struct fields in as pointers if you want the validator to be able to make changes to the underlying values.  For example, TrimSpace() cant actually trim the space unless it recieves a pointer.
+
+###API
+Pre-Build Validators:
 
 -  **MaxLength(maxLength int) / MinLength(minLength int)** - works for strings, arrays, and maps
 -  **Matches(regex *regexp.Regexp)** - returns true if it meets the regex
@@ -77,12 +85,8 @@ More that I want to add when I have time:
 
 
 
-###Note
->Also note, for now I am experimenting with getting the form key out of the struct as the default key.  I really want this to work moving forward so I'm setting up the syntax now.  Some have reported its not super robust, so if you want to set a custom key, use the `.Key("key")` method.
 
 
-
-This is **very** work-in-progress, so don't rely on the sytax too much yet. Hope to reach a stable point in a few days.
 
 Ideas inspired from the [jQuery validation plugin](http://jqueryvalidation.org/documentation/) as well as the way .NET MVC handles [model validation](http://www.asp.net/mvc/tutorials/mvc-4/getting-started-with-aspnet-mvc4/adding-validation-to-the-model).
 
