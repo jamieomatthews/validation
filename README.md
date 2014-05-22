@@ -1,6 +1,8 @@
 ###martini-validate
 
-The idea behind this package is to give some nice default validation handlers for input handlers.  The package was developed with respect to the [MartiniContrib](https://github.com/martini-contrib/binding) repo, but can actually be used very generically by implementing the Errors interface.
+The idea behind this package is to give some nice default validation handlers for input handlers.  
+
+The package was developed with respect to the [Martini Binding](https://github.com/martini-contrib/binding) repo, but can actually be used very generically by implementing the Errors interface.
 
 ###Usage
 
@@ -54,11 +56,11 @@ This will generate something like:
 
 By default, the validator will grab the `form` key out of the struct tag to use as the output key.  This is nice because if you're using the form tag already you don't have to write out any additional keys, which keeps things DRY.
 
-To change what struct tag will be used to map the errors, use Validation.KeyTag(string).
+To change what struct tag will be used to map the errors, use `Validation.KeyTag(string)`.
 
-Keys can also be specified on per validation basis by chaining .Key(string).  Note that you must use this *before* you call the validator, as errors get mapped immeditaly after you call a validator. 
+Keys can also be specified on per validation basis by chaining `.Key(string)`.  Note that you must use this *before* you call the validator, as errors get mapped immeditaly after you call a validator. 
 
-Also, make sure to pass the struct fields in as pointers if you want the validator to be able to make changes to the underlying values.  For example, TrimSpace() cant actually trim the space unless it recieves a pointer.
+Also, make sure to pass the struct fields in as pointers if you want the validator to be able to make changes to the underlying values.  For example, `TrimSpace()` cant actually trim the space unless it recieves a pointer.
 
 ###API
 Pre-Build Validators:
@@ -80,19 +82,16 @@ As well as some utilities, like
 
 More that I want to add when I have time:
 
--  EqualTo (other form field)
+-  **EqualTo** (other form field)
 -  Use matches pattern to do other pattern like examples
 
 
-
->Note: The tests are not complete, and are not really semantic tests, but should give you a good idea of where to start.  These will be improved ASAP
-
-**Contributions welcome!**
-Todo's:
+###Contributions welcome!
+**Todo's:**
 
 - Write some validators on the http.Request.  For example, HasHeader(), etc
 - Improve the syntax to handle multi-field errors
 - Add some of the validators listed as want-to-haves above
-
+- **Improve Test Coverage**
 Ideas inspired from the [jQuery validation plugin](http://jqueryvalidation.org/documentation/) as well as the way .NET MVC handles [model validation](http://www.asp.net/mvc/tutorials/mvc-4/getting-started-with-aspnet-mvc4/adding-validation-to-the-model).
 
