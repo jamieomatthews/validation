@@ -9,14 +9,14 @@ The package was developed with respect to the [Martini Binding](https://github.c
 ```go
 func (contactRequest ContactRequest) Validate(errors binding.Errors, req *http.Request) binding.Errors {
 
-	v := validation.New(errors, req)
+    v := NewValidation(errors, user)
 
 	// //run some validators
 	v.Validate(&contactRequest.FullName).Key("fullname").MaxLength(20)
 	v.Validate(&contactRequest.Email).Default("Custom Email Validation Message").Classify("email-class").Email()
 	v.Validate(&contactRequest.Comments).TrimSpace().MinLength(10)
 
-	return v.Errors
+	return *v.Errors.(*binding.Errors)
 }
 
 type ContactRequest struct {
