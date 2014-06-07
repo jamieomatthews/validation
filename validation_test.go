@@ -6,7 +6,7 @@ import (
 )
 
 func TestValidation(t *testing.T) {
-	user := &User{"John Doe The Fourth", 20, "john@gmail", "John's profile is a long string of text that is more than 20 characters long", "34368140066606", "url.com"}
+	user := &User{"John Doe The Fourth", 20, "john@gmail", "John's profile is a long string of text that is more than 20 characters long", "34368140066606", "url.com", "", 0}
 
 	//to initialize a validation object, we need to pass in the model object (struct) being validated
 	//as well as an array of type Error (interface can be found in errors.go)
@@ -25,7 +25,12 @@ func TestValidation(t *testing.T) {
 	v.Validate(&user.Profile).TrimSpace().Range(10, 15)
 	v.Validate(&user.CreditCard).CreditCard()
 	v.Validate(&user.PageURL).TrimSpace().URL()
+	v.Validate(&user.NickName).Required()
+	v.Validate(&user.Weight).Required()
 
+	if v.Errors.Len() != 7 {
+		t.Errorf("Except 7 errors, but %d catched", v.Errors.Len())
+	}
 	fmt.Println("Errors len = ", v.Errors.Len())
 	//must use type assertion because validate returns an interface
 	if myArray, ok := v.Errors.(*ValidationErrors); ok {

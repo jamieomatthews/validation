@@ -7,4 +7,6 @@ type User struct {
 	Profile    string `form:"profile" custom:"cprofile"`
 	CreditCard string `form:"credit"`
 	PageURL    string `form:"url"`
+	NickName   string `form:"nick_name"`
+	Weight     int    `form:"weight"`
 }
