@@ -18,28 +18,18 @@ type Required struct {
 	Key string
 }
 
-func (r Required) IsValid(obj interface{}) bool {
-	if obj == nil {
+func (r Required) IsValid(objPtr interface{}) bool {
+	if objPtr == nil {
 		return false
 	}
+	obj := dereference(objPtr)
+	if timeVal, ok := obj.(time.Time); ok {
+		return !timeVal.IsZero()
+	}
 
-	if str, ok := obj.(string); ok {
-		return len(str) > 0
-	}
-	if b, ok := obj.(bool); ok {
-		return b
-	}
-	if i, ok := obj.(int); ok {
-		return i != 0
-	}
-	if t, ok := obj.(time.Time); ok {
-		return !t.IsZero()
-	}
-	v := reflect.ValueOf(obj)
-	if v.Kind() == reflect.Slice {
-		return v.Len() > 0
-	}
-	return true
+	val := reflect.ValueOf(obj)
+	return !IsZero(val)
+
 }
 
 func (r Required) DefaultMessage() string {
@@ -156,4 +146,37 @@ type URL struct {
 
 func (url URL) DefaultMessage() string {
 	return fmt.Sprintf("Must be a valid URL")
+}
+
+func dereference(intptr interface{}) interface{} {
+	var t reflect.Type
+	var v reflect.Value
+	t = reflect.TypeOf(intptr)
+	v = reflect.ValueOf(intptr)
+	for t.Kind() == reflect.Ptr {
+		t = t.Elem()
+		v = v.Elem()
+	}
+	return v.Interface()
+}
+
+
+//from
+//https://code.google.com/p/go/issues/detail?id=7501&q=IsZero&colspec=ID%20Status%20Stars%20Release%20Owner%20Repo%20Summary
+func IsZero(v reflect.Value) bool {
+	switch v.Kind() {
+	case reflect.Array, reflect.String:
+		return v.Len() == 0
+	case reflect.Bool:
+		return !v.Bool()
+	case reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64:
+		return v.Int() == 0
+	case reflect.Uint, reflect.Uint8, reflect.Uint16, reflect.Uint32, reflect.Uint64, reflect.Uintptr:
+		return v.Uint() == 0
+	case reflect.Float32, reflect.Float64:
+		return v.Float() == 0
+	case reflect.Interface, reflect.Map, reflect.Ptr, reflect.Slice:
+		return v.IsNil()
+	}
+	return false
 }
