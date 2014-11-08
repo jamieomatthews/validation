@@ -9,7 +9,7 @@ The package was developed with respect to the [Martini Binding](https://github.c
 ```go
 func (contactRequest ContactRequest) Validate(errors binding.Errors, req *http.Request) binding.Errors {
 
-    v := NewValidation(&errors, user)
+    v := NewValidation(&errors, contactRequest)
 
 	// //run some validators
 	v.Validate(&contactRequest.FullName).Key("fullname").MaxLength(20)
